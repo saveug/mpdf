@@ -10,8 +10,6 @@
 
 // NB UNITS - Works in pixels as main units - converting to PDF units when outputing to PDF string
 // and on returning size
-namespace mpdf;
-
 
 class SVG {
 
@@ -2180,10 +2178,10 @@ function svgDefineTxtStyle($critere_style)
 
 				case 'path':
 					$path = $attribs['d'];
-					// mPDF 4.4.003
-					preg_match_all('/([MZLHVCSQTAmzlhvcsqta])([e ,\-.\d]+)*/', $path, $commands, PREG_SET_ORDER);
+					// mPDF 5.6.65
+					preg_match_all('/([MZLHVCSQTAmzlhvcsqta])([eE ,\-.\d]+)*/', $path, $commands, PREG_SET_ORDER);
 					$path_cmd = '';
-					$svg_class->subPathInit = true;	// mPDF 4.4.003
+					$svg_class->subPathInit = true;
 					// mPDF 5.0.039
 					$svg_class->pathBBox = array(999999,999999,-999999,-999999);
 					foreach($commands as $c){
