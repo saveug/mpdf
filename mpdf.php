@@ -12,6 +12,7 @@
 // Changes:  See changelog.txt                                                  *
 // ******************************************************************************
 
+namespace mpdf;
 
 define('mPDF_VERSION','5.7.1');
 
@@ -823,15 +824,15 @@ var $innerblocktags;
 // **********************************
 // **********************************
 
-function mPDF($mode='',$format='A4',$default_font_size=0,$default_font='',$mgl=15,$mgr=15,$mgt=16,$mgb=16,$mgh=9,$mgf=9, $orientation='P') {
+function __construct($mode='',$format='A4',$default_font_size=0,$default_font='',$mgl=15,$mgr=15,$mgt=16,$mgb=16,$mgh=9,$mgf=9, $orientation='P') {
 
 /*-- BACKGROUNDS --*/
 		if (!class_exists('grad', false)) { include(_MPDF_PATH.'classes/grad.php'); }
 		if (empty($this->grad)) { $this->grad = new grad($this); }
 /*-- END BACKGROUNDS --*/
 /*-- FORMS --*/
-		if (!class_exists('form', false)) { include(_MPDF_PATH.'classes/form.php'); }
-		if (empty($this->form)) { $this->form = new form($this); }
+		include(_MPDF_PATH.'classes/form.php');
+		if (empty($this->form)) { $this->form = new \mpdf\form($this); }
 /*-- END FORMS --*/
 
 	$this->time0 = microtime(true);
@@ -1732,6 +1733,8 @@ function SetVisibility($v) {
 }
 
 function Error($msg) {
+    trigger_error($msg, E_USER_ERROR);
+    return;
 	//Fatal error
 	header('Content-Type: text/html; charset=utf-8');
 	die('<B>mPDF error: </B>'.$msg);
@@ -3048,7 +3051,7 @@ function AddFont($family,$style='') {
 		$unAGlyphs = false;
 	}
 	if (!isset($name) || $originalsize != $ttfstat['size'] || $regenerate) {
-		if (!class_exists('TTFontFile', false)) { include(_MPDF_PATH .'classes/ttfontsuni.php'); }
+		if (!class_exists('mpdf\TTFontFile', false)) { include(_MPDF_PATH .'classes/ttfontsuni.php'); }
 		$ttf = new TTFontFile();
 		$ttf->getMetrics($ttffile, $TTCfontID, $this->debugfonts, $BMPonly, $this->useKerning, $unAGlyphs);	// mPDF 5.4.05
 		$cw = $ttf->charWidths;
@@ -9707,7 +9710,7 @@ function _getImage(&$file, $firsttime=true, $allowvector=true, $orig_srcpath=fal
 			$this->file_get_contents_by_socket($file, $data);	// needs full url?? even on local (never needed for local)
 			if ($data) { $type = $this->_imageTypeFromString($data); }
 		}
-		if ((!$data || !$type) && !ini_get('allow_url_fopen') && function_exists("curl_init")) {
+		if ((!$data || !$type) && function_exists("curl_init")) {
 			$this->file_get_contents_by_curl($file, $data);		// needs full url?? even on local (never needed for local)
 			if ($data) { $type = $this->_imageTypeFromString($data); }
 		}
@@ -10373,6 +10376,10 @@ function _jpgDataFromHeader($hdr) {
 function file_get_contents_by_curl($url, &$data) {
 	$timeout = 5;
 	$ch = curl_init($url);
+	global $_COOKIE;
+	foreach( $_COOKIE['devprom'] as $session => $key ) {
+		curl_setopt($ch, CURLOPT_COOKIE, "devprom[".$session."]=".$key.";Path=/;Domain=");
+	}
 	curl_setopt($ch, CURLOPT_HEADER, 0);
 	curl_setopt($ch, CURLOPT_NOBODY, 0);
 	curl_setopt ( $ch , CURLOPT_RETURNTRANSFER , 1 );
@@ -10380,7 +10387,6 @@ function file_get_contents_by_curl($url, &$data) {
 	$data = curl_exec($ch);
 	curl_close($ch);
 }
-
 
 function file_get_contents_by_socket($url, &$data) {
 	$timeout = 1;
@@ -13289,8 +13295,8 @@ function WriteHTML($html,$sub=0,$init=true,$close=true) {
 			// Changed to allow style="background: url('bg.jpg')"
 			// mPDF 5.5.17  Changed to improve performance; maximum length of \S (attribute) = 16
 			// mPDF 5.6.30  Increase allowed attribute name to 32 - cutting off "toc-even-header-name" etc.
-			preg_match_all('/\\S{1,32}=["][^"]*["]/',$e,$contents1);
-			preg_match_all('/\\S{1,32}=[\'][^\']*[\']/i',$e,$contents2);
+			preg_match_all('/\\w{1,32}=["][^"]*["]/',$e,$contents1);
+			preg_match_all('/\\w{1,32}=[\'][^\']*[\']/i',$e,$contents2);
 
 			$contents = array_merge($contents1, $contents2);
 			preg_match('/\\S+/',$e,$a2);
