@@ -3052,7 +3052,7 @@ function AddFont($family,$style='') {
 	}
 	if (!isset($name) || $originalsize != $ttfstat['size'] || $regenerate) {
 		if (!class_exists('mpdf\TTFontFile', false)) { include(_MPDF_PATH .'classes/ttfontsuni.php'); }
-		$ttf = new TTFontFile();
+		$ttf = new mpdf\TTFontFile();
 		$ttf->getMetrics($ttffile, $TTCfontID, $this->debugfonts, $BMPonly, $this->useKerning, $unAGlyphs);	// mPDF 5.4.05
 		$cw = $ttf->charWidths;
 		$kerninfo = $ttf->kerninfo;
